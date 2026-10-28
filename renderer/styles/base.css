@@ -1,0 +1,296 @@
+/* ============================================================
+   AI漫剧工作站 · 基础样式
+   2D 扁平卡通休闲 UI · 奶白底 / 香芋紫 / 浅天蓝马卡龙配色
+   ============================================================ */
+
+:root,
+[data-theme="light"] {
+  --bg: #FAF6EE;
+  --bg-soft: #F2ECDF;
+  --card: #FFFFFF;
+  --ink: #514B63;
+  --ink-strong: #393451;
+  --muted: #9C94AE;
+  --purple: #A78BFA;
+  --purple-deep: #8A6BE6;
+  --purple-soft: #EEE8FD;
+  --blue: #7FC4F8;
+  --blue-deep: #5CA7E8;
+  --blue-soft: #E3F1FD;
+  --pink: #F7B8CD;
+  --pink-soft: #FCE9F0;
+  --green: #7CCFA4;
+  --green-soft: #E3F6EB;
+  --amber: #F3C36F;
+  --amber-soft: #FCF2DD;
+  --danger: #E58BA0;
+  --danger-soft: #FCE9ED;
+  --border: #EFE8DC;
+  --border-strong: #E3DAC8;
+  --shadow: 0 8px 24px rgba(128, 105, 180, 0.10);
+  --shadow-soft: 0 3px 12px rgba(128, 105, 180, 0.07);
+  --shadow-hover: 0 12px 30px rgba(128, 105, 180, 0.16);
+  --titlebar-bg: #F6F0E4;
+  --code-bg: #FBF8F1;
+}
+
+[data-theme="dark"] {
+  --bg: #20242F;
+  --bg-soft: #262B38;
+  --card: #2B3142;
+  --ink: #C9C4DA;
+  --ink-strong: #F0EDF9;
+  --muted: #8F8AA6;
+  --purple: #A78BFA;
+  --purple-deep: #B39AFD;
+  --purple-soft: #332E4D;
+  --blue: #7FC4F8;
+  --blue-deep: #8CCDF7;
+  --blue-soft: #24394C;
+  --pink: #E9A8C0;
+  --pink-soft: #402F3B;
+  --green: #7CCFA4;
+  --green-soft: #223C30;
+  --amber: #E9B964;
+  --amber-soft: #3B3323;
+  --danger: #E58BA0;
+  --danger-soft: #412C33;
+  --border: #3A4054;
+  --border-strong: #464D66;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  --shadow-soft: 0 3px 12px rgba(0, 0, 0, 0.22);
+  --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.38);
+  --titlebar-bg: #1B1F29;
+  --code-bg: #232836;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI",
+    system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+  user-select: none;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+select,
+textarea {
+  user-select: text;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+/* ---------------- 自定义标题栏 ---------------- */
+.titlebar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--titlebar-bg);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 60;
+}
+
+.titlebar-drag {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  height: 100%;
+  flex: 1;
+}
+
+.title-logo {
+  font-size: 16px;
+}
+
+.title-text {
+  font-weight: 700;
+  color: var(--ink-strong);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.title-sub {
+  color: var(--muted);
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.win-controls {
+  display: flex;
+  height: 100%;
+  -webkit-app-region: no-drag;
+}
+
+.win-btn {
+  width: 46px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.win-btn:hover {
+  background: var(--purple-soft);
+  color: var(--ink-strong);
+}
+
+.win-close:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* ---------------- 三栏工作台 ---------------- */
+.app-shell {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr) 348px;
+  height: calc(100vh - 44px);
+  position: relative;
+}
+
+.app-shell.rp-collapsed {
+  grid-template-columns: 264px minmax(0, 1fr) 0px;
+}
+
+.left-panel {
+  background: var(--bg-soft);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px 14px;
+  overflow: hidden;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, var(--purple-soft) 0%, transparent 55%),
+    radial-gradient(900px 420px at 10% 110%, var(--blue-soft) 0%, transparent 50%),
+    var(--bg);
+}
+
+.right-panel {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.25s ease;
+}
+
+.app-shell.rp-collapsed .right-panel {
+  width: 0;
+  border-left: none;
+}
+
+/* ---------------- 滚动 ---------------- */
+.scroll-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ---------------- 角落装饰 ---------------- */
+.deco {
+  position: fixed;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.72;
+  filter: saturate(0.92);
+}
+
+.deco-script {
+  left: 4px;
+  bottom: 42px;
+  transform: rotate(-8deg);
+}
+
+.deco-person {
+  left: 12px;
+  bottom: -8px;
+}
+
+.deco-tree {
+  right: 4px;
+  bottom: 36px;
+  transform: rotate(5deg);
+}
+
+.deco-prop {
+  right: 6px;
+  bottom: -6px;
+}
+
+[data-theme="dark"] .deco {
+  opacity: 0.42;
+}
+
+/* ---------------- 通用工具 ---------------- */
+.hidden {
+  display: none !important;
+}
+
+/* 确保 hidden 属性始终生效，不被带 display 的组件样式覆盖 */
+[hidden] {
+  display: none !important;
+}
+
+.mono {
+  font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+}

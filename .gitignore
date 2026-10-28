@@ -1,0 +1,9 @@
+node_modules/
+work/
+*.zip
+*.log
+debug.log
+AI-Comic-Workstation-Portable/
+AI漫剧工作站_便携版/
+.DS_Store
+Thumbs.db

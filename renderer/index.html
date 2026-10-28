@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self'; connect-src 'none'" />
+  <title>AI漫剧工作站</title>
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body data-theme="light">
+
+  <!-- 自定义标题栏 -->
+  <header class="titlebar">
+    <div class="titlebar-drag">
+      <span class="title-logo">🎬</span>
+      <span class="title-text">AI漫剧工作站</span>
+      <span class="title-sub">本地创作工作台</span>
+    </div>
+    <div class="win-controls">
+      <button class="win-btn" id="winMin" title="最小化">&#x2500;</button>
+      <button class="win-btn" id="winMax" title="最大化">&#x25A1;</button>
+      <button class="win-btn win-close" id="winClose" title="关闭">&#x2715;</button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <!-- 左侧：竖向导航树面板 -->
+    <aside class="left-panel">
+      <div class="nav-brand">
+        <div class="brand-icon">🎬</div>
+        <div>
+          <div class="brand-name">AI漫剧工作站</div>
+          <div class="brand-sub">剧本 · 资产 · 分镜</div>
+        </div>
+      </div>
+
+      <nav class="nav-tree" id="navTree">
+        <div class="nav-group">
+          <div class="nav-group-head" data-target="grp-project"><span class="nav-icon">📂</span>项目<span class="nav-arrow">▾</span></div>
+          <div class="nav-group-body" id="grp-project">
+            <button class="nav-item" data-action="new"><span class="nav-dot"></span>新建项目</button>
+            <button class="nav-item" data-action="open"><span class="nav-dot"></span>打开项目</button>
+            <button class="nav-item" data-action="save"><span class="nav-dot"></span>保存项目</button>
+            <button class="nav-item" data-action="export"><span class="nav-dot"></span>导出项目</button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-head" data-target="grp-workflow"><span class="nav-icon">🧭</span>工作流<span class="nav-arrow">▾</span></div>
+          <div class="nav-group-body" id="grp-workflow">
+            <button class="nav-item" data-tab="upload"><span class="nav-dot"></span>上传剧本</button>
+            <button class="nav-item" data-tab="style"><span class="nav-dot"></span>选择风格</button>
+            <button class="nav-item" data-tab="assets"><span class="nav-dot"></span>资产拆分与校验</button>
+            <button class="nav-item" data-tab="prompts"><span class="nav-dot"></span>资产提示词生成</button>
+            <button class="nav-item" data-tab="storyboard"><span class="nav-dot"></span>分镜生成编辑</button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-head" data-target="grp-assets"><span class="nav-icon">🎭</span>资产中心<span class="nav-arrow">▾</span></div>
+          <div class="nav-group-body" id="grp-assets">
+            <button class="nav-item" data-action="goto-cat" data-cat="single"><span class="nav-dot"></span>单人资产</button>
+            <button class="nav-item" data-action="goto-cat" data-cat="group"><span class="nav-dot"></span>群像资产</button>
+            <button class="nav-item" data-action="goto-cat" data-cat="scene"><span class="nav-dot"></span>场景资产</button>
+            <button class="nav-item" data-action="goto-cat" data-cat="prop"><span class="nav-dot"></span>道具资产</button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-head" data-target="grp-sb"><span class="nav-icon">🎬</span>分镜管理<span class="nav-arrow">▾</span></div>
+          <div class="nav-group-body" id="grp-sb">
+            <button class="nav-item" data-action="goto-sb-list"><span class="nav-dot"></span>全部集数分镜</button>
+            <div class="nav-episodes" id="navEpisodes"></div>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-head" data-target="grp-settings"><span class="nav-icon">⚙️</span>设置<span class="nav-arrow">▾</span></div>
+          <div class="nav-group-body" id="grp-settings">
+            <button class="nav-item" data-action="open-settings"><span class="nav-dot"></span>AI 模型配置</button>
+            <button class="nav-item" data-action="open-rules"><span class="nav-dot"></span>提示词库与规则</button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="left-footer">
+        <button class="theme-toggle" id="themeToggle" title="切换黑夜/白天模式">
+          <span class="theme-ic" id="themeIcon">☀️</span>
+          <span id="themeLabel">白天模式</span>
+        </button>
+        <span class="version" id="versionTag">v1.0.0</span>
+      </div>
+    </aside>
+
+    <!-- 中间：Tab 工作区 -->
+    <main class="center">
+      <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="upload"><span class="tab-ic">📄</span>上传剧本</button>
+        <button class="tab-btn" data-tab="style"><span class="tab-ic">🎨</span>选择风格</button>
+        <button class="tab-btn" data-tab="assets"><span class="tab-ic">🧩</span>资产拆分与校验</button>
+        <button class="tab-btn" data-tab="prompts"><span class="tab-ic">✨</span>资产提示词生成</button>
+        <button class="tab-btn" data-tab="storyboard"><span class="tab-ic">🎬</span>分镜生成编辑</button>
+      </div>
+
+      <div class="content" id="content">
+        <!-- Tab 1：上传剧本 -->
+        <section class="tab-panel active" id="panel-upload" data-tab="upload">
+          <div class="panel-title">
+            <h2>上传剧本</h2>
+            <p>拖入或选择剧本文件，自动按「第 X 集」拆分集数，作为后续资产与分镜的数据源。</p>
+          </div>
+          <div class="card">
+            <div class="dropzone" id="dropzone" tabindex="0">
+              <div class="dz-icon">📥</div>
+              <div class="dz-main">将剧本文件拖拽到此处</div>
+              <div class="dz-sub">或点击选择本地文件</div>
+              <div class="dz-types">支持 .txt / .docx</div>
+              <button class="btn primary" id="btnChooseFile">选择文件</button>
+            </div>
+            <div class="row actions upload-actions">
+              <div class="upload-actions-left">
+                <button class="btn ghost" id="btnSample">载入示例剧本</button>
+                <button class="btn ghost danger-text" id="btnClearScript">清空剧本</button>
+              </div>
+              <div class="upload-actions-right">
+                <button class="btn primary" id="btnChooseStyle">🎨 选择剧本风格</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" id="scriptInfoCard" hidden>
+            <div class="card-head">
+              <h3>剧本信息</h3>
+              <span class="badge" id="scriptStatusBadge">未处理</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-cell"><span class="info-key">文件名</span><span class="info-val" id="infoName">—</span></div>
+              <div class="info-cell"><span class="info-key">总字数</span><span class="info-val" id="infoChars">—</span></div>
+              <div class="info-cell"><span class="info-key">集数</span><span class="info-val" id="infoEpisodes">—</span></div>
+              <div class="info-cell"><span class="info-key">场景数</span><span class="info-val" id="infoScenes">—</span></div>
+            </div>
+            <div class="episode-strip" id="uploadEpisodes"></div>
+            <div class="preview-block">
+              <div class="preview-head"><span>📄 剧本原文预览</span><span class="badge gray">只读</span></div>
+              <textarea class="textarea mono readonly" id="scriptPreview" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 2：选择风格 -->
+        <section class="tab-panel" id="panel-style" data-tab="style">
+          <div class="panel-title">
+            <h2>选择生成类型</h2>
+            <p>决定后续资产提示词与分镜提示词的基础风格前缀。</p>
+          </div>
+          <div class="style-cards">
+            <button class="style-card" id="styleAi3d" data-gen="ai3d">
+              <div class="style-ic">🧊</div>
+              <div class="style-name">3D 漫剧</div>
+              <div class="style-desc">三维卡通渲染质感，场景立体、光影柔和，适合轻松休闲与奇幻题材。</div>
+              <div class="style-check">✓ 已选择</div>
+            </button>
+            <button class="style-card" id="styleAiReal" data-gen="aiReal">
+              <div class="style-ic">🎥</div>
+              <div class="style-name">AI 真人漫剧</div>
+              <div class="style-desc">写实真人影像质感，电影感构图与光影，适合都市、古装等真人剧情。</div>
+              <div class="style-check">✓ 已选择</div>
+            </button>
+          </div>
+          <div class="card tip-card">
+            <div class="tip-title">💡 风格会如何影响生成？</div>
+            <div class="tip-body">所选类型会自动拼入资产提示词与分镜提示词的风格前缀（如「3D 卡通渲染」「写实真人影像」），并影响人物、场景、道具的描述侧重。</div>
+          </div>
+        </section>
+
+        <!-- Tab 3：资产拆分与校验（单人/群像/场景/道具 四板块） -->
+        <section class="tab-panel" id="panel-assets" data-tab="assets">
+          <div class="panel-title">
+            <h2>资产拆分与校验</h2>
+            <p>AI 将剧本拆分为单人、群像、场景、道具四类资产，内容完全隔离；支持停止、搜索与逐项校验补全。</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head collapsible-head" id="splitRuleHead">
+              <h3>📐 资产拆分规则配置</h3>
+              <span class="collapse-arrow" id="splitRuleArrow">▾</span>
+            </div>
+            <div class="rule-body" id="splitRuleBody">
+              <div class="rule-summary">
+                <span class="badge">人物 / 场景 / 道具 完全隔离</span>
+                <span class="badge blue">单人与群像区分</span>
+                <span class="badge green">自然环境物不拆分</span>
+                <span class="badge amber">可自定义规则</span>
+              </div>
+              <textarea class="textarea mono" id="splitRuleText" rows="9" placeholder="粘贴资产拆分规则…"></textarea>
+              <div class="row actions">
+                <button class="btn primary" id="btnSaveSplitRule">保存规则</button>
+                <button class="btn primary" id="btnLoadSplitRule">载入内置拆分规则</button>
+                <button class="btn ghost" id="btnResetSplitRule">恢复默认</button>
+                <button class="btn ghost" id="btnImportSplitRule">导入规则文件</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>拆分任务</h3>
+              <div class="head-actions">
+                <button class="btn primary" id="btnSplitAll">开始 AI 资产拆分</button>
+                <button class="btn ghost" id="btnStopSplit">■ 停止拆分</button>
+                <button class="btn ghost" id="btnResplit">🔄 重新拆分资产</button>
+                <button class="btn ghost" id="btnCompleteAll">一键补全全剧集资产</button>
+                <button class="btn ghost" id="btnAnnotate">★ 标注主要角色</button>
+              </div>
+            </div>
+            <div class="progress-block">
+              <div class="progress-label">
+                <span>拆分与校验进度</span>
+                <span class="progress-num" id="splitPercent">0%</span>
+              </div>
+              <div class="progress"><div class="progress-fill" id="splitBar"></div></div>
+              <div class="progress-detail" id="splitDetail">尚未拆分。请先在「上传剧本」中载入剧本。</div>
+            </div>
+            <div class="asset-toolbar">
+              <div class="chips" id="assetScopeChips">
+                <button class="chip active" data-scope="all">🌐 全部资产（跨集汇总）</button>
+                <button class="chip" data-scope="ep">📑 按集查看（查看补缺）</button>
+              </div>
+              <div class="search-wrap">
+                <span class="search-ic">🔍</span>
+                <input class="input search-input" id="assetSearch" placeholder="搜索资产名称…" />
+              </div>
+              <div class="asset-counts" id="assetCounts"></div>
+            </div>
+            <div class="asset-scope-ep" id="assetScopeWrap" hidden>
+              <label class="field" style="max-width:220px;">
+                <span class="field-label">选择集数</span>
+                <select class="select" id="assetScopeEpSel"></select>
+              </label>
+            </div>
+            <div class="asset-script-block" id="assetScriptBlock" hidden>
+              <div class="preview-head"><span>📄 第 <span id="assetScriptEp">1</span> 集 · 剧本原文</span><span class="badge gray">只读</span></div>
+              <textarea class="textarea mono readonly" id="assetScriptText" readonly></textarea>
+            </div>
+            <div class="asset-ep-head">
+              <button class="ep-toggle" id="assetEpToggle">📂 全部集数（展开）</button>
+            </div>
+            <div class="episode-strip" id="assetEpisodes" hidden></div>
+          </div>
+
+          <div class="asset-cat-tabs" id="assetCatTabs">
+            <button class="atab active" data-cat="single">👤 单人 <span class="atab-count" id="count-single">0</span></button>
+            <button class="atab" data-cat="group">👥 群像 <span class="atab-count" id="count-group">0</span></button>
+            <button class="atab" data-cat="scene">🏞️ 场景 <span class="atab-count" id="count-scene">0</span></button>
+            <button class="atab" data-cat="prop">⚔️ 道具 <span class="atab-count" id="count-prop">0</span></button>
+          </div>
+          <div class="card asset-col">
+            <div class="asset-list" id="list-asset"></div>
+            <button class="btn dashed add-asset-btn" data-cat="single" id="addAssetBtn">＋ 添加缺失资产</button>
+          </div>
+        </section>
+
+        <!-- Tab 4：资产提示词生成（四类分主题配置） -->
+        <section class="tab-panel" id="panel-prompts" data-tab="prompts">
+          <div class="panel-title">
+            <h2>资产提示词生成</h2>
+            <p>单人、群像、场景、道具四类资产生成提示词时各自独立配置，结合前缀词、参考词与对应剧本背景。</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head collapsible-head" id="scoreRuleHead">
+              <h3>📐 资产提示词规则配置</h3>
+              <span class="collapse-arrow" id="scoreRuleArrow">▾</span>
+            </div>
+            <div class="rule-body" id="scoreRuleBody">
+              <div class="rule-summary">
+                <span class="badge">四类内容完全隔离</span>
+                <span class="badge blue">参考词按资产独立</span>
+                <span class="badge green">只输出提示词</span>
+                <span class="badge amber">可自定义规则</span>
+              </div>
+              <label class="field">
+                <span class="field-label">风格示例参考（生成时作为范式）</span>
+                <textarea class="textarea mono" id="scoreStyleText" rows="5" placeholder="粘贴风格示例 / 参考提示词…"></textarea>
+              </label>
+              <label class="field">
+                <span class="field-label">通用生成规则</span>
+                <textarea class="textarea mono" id="scoreRuleText" rows="6" placeholder="粘贴生成规则，如人物/场景/道具隔离要求、单人群像区分…"></textarea>
+              </label>
+              <div class="row actions">
+                <button class="btn primary" id="btnSaveScoreRule">保存规则</button>
+                <button class="btn primary" id="btnLoadScoreRule">载入内置参考</button>
+                <button class="btn ghost" id="btnResetScoreRule">恢复默认</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>生成配置</h3>
+              <div class="head-actions">
+                <button class="btn primary" id="btnGenAllPrompts">批量生成全部</button>
+                <button class="btn ghost" id="btnClearPrompts">清空提示词</button>
+              </div>
+            </div>
+
+            <div class="config-grid" id="promptCfgBody">
+              <label class="field span2">
+                <span class="field-label">全局配置前缀词（所有资产生成时共用）</span>
+                <input class="input" id="cfgPrefix" placeholder="例如：3D 卡通渲染，柔光，精致细节…" />
+              </label>
+            </div>
+            <p class="config-note">💡 每个资产的“参考词 / 风格 / 特殊要求”已在下方每个资产卡片里单独设置，生成时会与全局前缀词一起使用。</p>
+
+            <div class="filter-row">
+              <div class="chips" id="promptCatChips">
+                <button class="chip active" data-cat="all">全部</button>
+                <button class="chip" data-cat="single">单人</button>
+                <button class="chip" data-cat="group">群像</button>
+                <button class="chip" data-cat="scene">场景</button>
+                <button class="chip" data-cat="prop">道具</button>
+              </div>
+              <div class="search-wrap">
+                <span class="search-ic">🔍</span>
+                <input class="input search-input" id="promptSearch" placeholder="搜索资产名称…" />
+              </div>
+              <select class="select" id="promptEpisodeSel"></select>
+            </div>
+          </div>
+
+          <div id="promptList" class="prompt-list"></div>
+        </section>
+
+        <!-- Tab 5：分镜生成编辑 -->
+        <section class="tab-panel" id="panel-storyboard" data-tab="storyboard">
+          <div class="panel-title">
+            <h2>分镜生成</h2>
+            <p>按集自动识别，台词不改、15 秒分组；支持批量多集、单组预览、导出与自定义改写。</p>
+          </div>
+
+          <!-- 规则配置 -->
+          <div class="card">
+            <div class="card-head collapsible-head" id="ruleCardHead">
+              <h3>📐 分镜规则配置</h3>
+              <span class="collapse-arrow" id="ruleArrow">▾</span>
+            </div>
+            <div class="rule-body" id="ruleBody">
+              <div class="rule-summary">
+                <span class="badge">单组上限 15 秒</span>
+                <span class="badge blue">台词绑定镜头</span>
+                <span class="badge green">按集分组</span>
+                <span class="badge amber">可自定义规则</span>
+              </div>
+              <textarea class="textarea mono" id="ruleText" rows="9" placeholder="粘贴分镜优化师规则 / 自定义规则…"></textarea>
+              <div class="row actions">
+                <button class="btn primary" id="btnSaveSbRule">保存规则</button>
+                <button class="btn primary" id="btnLoadRuleSample">载入内置分镜规则</button>
+                <button class="btn ghost" id="btnImportRuleFile">导入规则文件</button>
+                <button class="btn ghost" id="btnResetRule">恢复默认</button>
+                <span class="rule-hint" id="ruleFileHint">当前：内置规则</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 生成当前 / 全部 / 搜索 / 多选 -->
+          <div class="card">
+            <div class="card-head">
+              <h3>生成分镜</h3>
+              <div class="head-actions">
+                <button class="btn ghost" id="btnToggleRule">✎ 编辑分镜规则</button>
+                <button class="btn ghost" id="sbMultiToggle">勾选多集批量</button>
+                <button class="btn primary" id="btnGenStoryboard">▶ 生成当前集分镜</button>
+                <button class="btn ghost" id="btnGenAllSb">生成全部集数</button>
+              </div>
+            </div>
+            <div class="sb-toolbar">
+              <div class="search-wrap">
+                <span class="search-ic">🔍</span>
+                <input class="input search-input" id="sbSearch" placeholder="搜索集数，如 3、12-15、全部…" />
+              </div>
+              <span class="sb-selected-info" id="sbSelectedInfo"></span>
+            </div>
+            <div class="asset-ep-head">
+              <button class="ep-toggle" id="sbEpToggle">📂 全部分镜集数（收起）</button>
+            </div>
+            <div class="sb-grid" id="sbGrid" hidden></div>
+          </div>
+
+          <!-- 分镜组：tabs + 操作 -->
+          <div class="card" id="sbGroupsCard">
+            <div class="sb-groups-toolbar">
+              <div class="sb-tabs" id="sbGroupTabs"></div>
+              <div class="row sb-groups-actions">
+                <button class="btn ghost sm" id="sbPrevGroup">‹ 上一组</button>
+                <button class="btn ghost sm" id="sbNextGroup">下一组 ›</button>
+                <button class="btn ghost sm" id="sbAddGroup">＋ 新增一组</button>
+                <button class="btn ghost sm" id="sbPreviewGroup">👁 单组预览</button>
+                <button class="btn ghost sm" id="sbCopyGroup">📋 复制当前</button>
+                <button class="btn ghost sm" id="sbExportTxt">📄 导出 .txt</button>
+                <button class="btn primary sm" id="sbRewriteGroup">✎ 自定义改写</button>
+              </div>
+            </div>
+            <div class="sb-episode-head" id="sbEpisodeHead" hidden>
+              <h3 id="sbEpisodeTitle">第 1 集 · 分镜</h3>
+              <span class="sb-summary" id="sbSummary">0 组 · 0 秒</span>
+            </div>
+            <div id="sbGroups" class="sb-groups"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 右侧：仅参数面板 -->
+    <aside class="right-panel" id="rightPanel">
+      <div class="rp-head">
+        <div class="rp-title">
+          <span class="rp-ic">🧰</span>
+          <span>参数面板</span>
+        </div>
+        <button class="rp-collapse-btn" id="rpCollapse" title="收起面板">»</button>
+      </div>
+      <div class="rp-body">
+        <div class="card mini">
+          <div class="mini-head">
+            <h4>AI 模型设置</h4>
+            <span class="mini-dot" id="aiStatusDot" title="未配置"></span>
+          </div>
+          <label class="field">
+            <span class="field-label">服务商</span>
+            <select class="select" id="providerSel">
+              <option value="deepseek">DeepSeek</option>
+              <option value="doubao">豆包（火山方舟）</option>
+              <option value="qwen">千问（阿里云百炼）</option>
+              <option value="kimi">Kimi（月之暗面）</option>
+              <option value="glm">GLM（智谱）</option>
+              <option value="custom">自定义（OpenAI 兼容）</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">API Key</span>
+            <input class="input" id="apiKeyInput" type="password" placeholder="sk-…" />
+          </label>
+          <label class="field">
+            <span class="field-label">接口地址</span>
+            <input class="input" id="baseUrlInput" placeholder="https://api.deepseek.com/v1" />
+          </label>
+          <label class="field">
+            <span class="field-label">模型</span>
+            <input class="input" id="modelInput" placeholder="deepseek-chat" />
+          </label>
+          <label class="field">
+            <span class="field-label">温度 <b id="tempVal">0.9</b></span>
+            <input class="range" id="tempRange" type="range" min="0" max="1.5" step="0.1" value="0.9" />
+          </label>
+          <label class="field">
+            <span class="field-label">最大 Token</span>
+            <input class="input" id="maxTokensInput" type="number" value="4096" min="256" max="32768" step="256" />
+          </label>
+          <div class="row actions">
+            <button class="btn ghost sm" id="btnTestConn">测试连接</button>
+            <button class="btn ghost sm" id="btnShowSettings">更多设置</button>
+          </div>
+        </div>
+        <div class="card mini">
+          <div class="mini-head">
+            <h4>应用更新</h4>
+          </div>
+          <label class="field">
+            <span class="field-label">更新清单地址（manifest JSON）</span>
+            <input class="input" id="updateUrlInput" placeholder="https://…/update-manifest.json" />
+          </label>
+          <div class="row actions">
+            <button class="btn ghost sm" id="btnCheckUpdate">检查更新</button>
+          </div>
+          <div class="progress" id="updateBarWrap" style="height:10px;display:none;"><div class="progress-fill" id="updateBar"></div></div>
+          <div class="rp-context" id="updateStatus">未检查</div>
+        </div>
+        <div class="rp-tip">💡 左侧导航可快速跳转，中间为工作台，右侧统一配置 AI 模型。</div>
+      </div>
+    </aside>
+    <button class="rp-open-tab" id="rpOpenTab" hidden title="展开参数面板">«</button>
+  </div>
+
+  <!-- 右下角日历 -->
+  <div id="calendarHost"></div>
+
+  <!-- 应用宠物：会走动、可点击互动 -->
+  <div id="petHost" aria-label="应用宠物" title="点我互动"></div>
+
+  <div class="toast-root" id="toastRoot"></div>
+  <div class="modal-mask" id="modalMask" hidden>
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <input type="file" id="fileInput" hidden />
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
